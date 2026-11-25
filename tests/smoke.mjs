@@ -37,7 +37,7 @@ async function boot({ apiUrl, fetchImpl }) {
   })();`);
   w.fetch = fetchImpl;
   w.navigator.vibrate = () => true;
-  w.eval(read("config.js").replace('API_URL: ""', 'API_URL: ' + JSON.stringify(apiUrl)));
+  w.eval(read("config.js").replace(/API_URL:\s*"[^"]*"/, 'API_URL: ' + JSON.stringify(apiUrl)));
   w.eval(read("app.js"));
   await tick(60);
   return dom;
