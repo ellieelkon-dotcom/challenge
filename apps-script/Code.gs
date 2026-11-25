@@ -5,6 +5,9 @@ var SHEET_NAME = "נתונים";
 var LOG_NAME = "יומן";
 var LOG_LIMIT = 40; // כמה שינויים אחרונים doGet מחזיר לפיד הפעילות
 var RULE_COUNT = 5;
+// אזור זמן קבוע, כדי שחותמות הזמן ביומן יהיו שעון ישראל בלי תלות
+// בהגדרת אזור הזמן של הפרויקט ב-Apps Script.
+var TZ = "Asia/Jerusalem";
 
 function getSheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -36,13 +39,13 @@ function json_(obj) {
 
 function dateKey_(v) {
   if (v instanceof Date) {
-    return Utilities.formatDate(v, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    return Utilities.formatDate(v, TZ, "yyyy-MM-dd");
   }
   return String(v);
 }
 
 function stamp_() {
-  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm:ssXXX");
+  return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd'T'HH:mm:ssXXX");
 }
 
 function doGet() {
