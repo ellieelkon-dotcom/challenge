@@ -50,6 +50,7 @@ function makeServer() {
   const log = [];  // {t,p,d,r,v} מהחדש לישן
   const calls = [];
   let failNext = false;
+  let getDelay = 0;
   const fetchImpl = (url, opts) => {
     const isPost = !!(opts && opts.method === "POST");
     calls.push({
@@ -70,12 +71,11 @@ function makeServer() {
       }
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true }) });
     }
-    return Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({ ok: true, marks: rows.map((r) => ({ ...r })), log: log.slice(0, 40) }),
-    });
+    const snapshot = { ok: true, marks: rows.map((r) => ({ ...r })), log: log.slice(0, 40) };
+    if (getDelay) return new Promise((res) => setTimeout(() => res({ ok: true, json: () => Promise.resolve(snapshot) }), getDelay));
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(snapshot) });
   };
-  return { rows, log, calls, fetchImpl, setFail: (v) => { failNext = v; } };
+  return { rows, log, calls, fetchImpl, setFail: (v) => { failNext = v; }, setGetDelay: (v) => { getDelay = v; } };
 }
 
 // =================== מבחן 1: זרימה מלאה מול API מדומה ===================
@@ -197,6 +197,19 @@ function makeServer() {
   const noa = [...doc.querySelectorAll("#board .p")].find((r) => r.querySelector(".nm").textContent.indexOf("נועה") === 0);
   ok(noa.querySelector(".score").textContent === "5 /70", "נתונים של משתתף אחר נמשכו ומוצגים: " + noa.querySelector(".score").textContent);
   ok(doc.querySelector("#feed .ev").textContent.indexOf("נועה") >= 0, "הפיד מציג פעילות של אחרים: " + doc.querySelector("#feed .ev").textContent.trim());
+
+  // מרוץ: משיכה איטית שיצאה לפני הסימון לא דורסת אותו
+  srv.setGetDelay(400);
+  dayBtns[4].click();
+  await tick(60);
+  w.dispatchEvent(new w.Event("focus"));   // מתחילה משיכה איטית
+  await tick(80);
+  doc.querySelectorAll("#today .rule")[2].click(); // סימון באמצע המשיכה
+  await tick(1400);
+  srv.setGetDelay(0);
+  ok(JSON.parse(w.localStorage.getItem("challenge14:marks")).רון["2026-12-03"] === 27, "מרוץ: הסימון שנעשה באמצע משיכה לא נדרס (" + JSON.parse(w.localStorage.getItem("challenge14:marks")).רון["2026-12-03"] + ")");
+  ok(doc.querySelectorAll("#today .rule.on").length === 4, "מרוץ: המסך מציג את המצב הנכון");
+  ok(doc.querySelector("#feed .ev .rl").textContent.indexOf("סוכר מעובד") >= 0, "מרוץ: הפיד שומר על הרשומה החדשה: " + doc.querySelector("#feed .ev .rl").textContent);
 
   // החלפת שם
   doc.getElementById("change").click();

@@ -1,5 +1,5 @@
 // Service worker: האפליקציה נפתחת גם בלי קליטה. קודם מנסה רשת, ואם אין, לוקח מהמטמון.
-var CACHE = "challenge14-v3";
+var CACHE = "challenge14-v4";
 var ASSETS = ["./", "./index.html", "./app.js", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function (e) {

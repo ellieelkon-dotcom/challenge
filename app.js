@@ -353,13 +353,18 @@
     state.log.unshift({ t: new Date().toISOString(), p: state.me, d: k, r: idx, v: (m & (1 << idx)) ? 1 : 0 });
     state.log = state.log.slice(0, 40);
     save("log", state.log);
+    writeSeq++;
 
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
     renderAll();
     sync();
   }
 
+  // writeSeq עולה בכל כתיבה. משיכה שהתחילה לפני כתיבה ומגיעה אחריה נזרקת,
+  // אחרת תשובה ישנה מהגיליון דורסת סימון טרי.
+  var writeSeq = 0;
   var flushing = false;
+  var pulling = false;
   async function flush() {
     if (!API || flushing) return;
     flushing = true;
@@ -375,6 +380,7 @@
           if (it.p === snapshot.p && it.d === snapshot.d && it.m === snapshot.m) { state.pending.splice(q, 1); break; }
         }
         save("pending", state.pending);
+        writeSeq++;
         if (!j.ok) throw new Error(j.error || "save failed");
       }
       state.net = "ok";
@@ -388,11 +394,15 @@
   }
 
   async function pull() {
-    if (!API) return;
+    if (!API || pulling) return true;
+    pulling = true;
+    var seq = writeSeq;
+    var applied = false;
     try {
       var r = await fetch(API + (API.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now());
       var j = await r.json();
       if (!j.ok) throw new Error("bad response");
+      if (seq !== writeSeq) return false;
       var fresh = {};
       (j.marks || []).forEach(function (x) {
         if (C.PEOPLE.indexOf(x.p) < 0) return;
@@ -411,13 +421,21 @@
       }
       state.net = "ok";
       state.lastSync = new Date();
+      applied = true;
     } catch (e) {
       state.net = navigator.onLine === false ? "offline" : "error";
+      applied = true;
+    } finally {
+      pulling = false;
+      renderAll();
     }
-    renderAll();
+    return applied;
   }
 
-  function sync() { return flush().then(pull); }
+  // אם המשיכה נזרקה כי סימנו באמצע, מושכים שוב פעם אחת.
+  function sync() {
+    return flush().then(pull).then(function (applied) { return applied === false ? pull() : applied; });
+  }
 
   $("change").addEventListener("click", function () { state.me = null; renderPicker(); $("picker").hidden = false; });
   document.addEventListener("visibilitychange", function () { if (!document.hidden) { renderAll(); sync(); } });
