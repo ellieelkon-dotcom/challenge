@@ -86,8 +86,8 @@ function makeServer() {
 
   ok(!doc.getElementById("picker").hidden, "מסך פתיחה נפתח כשאין שם שמור");
   const picks = [...doc.querySelectorAll("#picks .pick")];
-  ok(picks.length === 7, "7 שמות במסך הבחירה (נמצאו " + picks.length + ")");
-  ok(picks.map((b) => b.textContent).join(",") === "אלי,רון,ליאל,נועה,איתי,ורד,קובי", "השמות נכונים ובסדר");
+  ok(picks.length === 8, "8 שמות במסך הבחירה (נמצאו " + picks.length + ")");
+  ok(picks.map((b) => b.textContent).join(",") === "אלי,רון,ליאל,נועה,איתי,ורד,קובי,רוני", "השמות נכונים ובסדר: " + picks.map((b) => b.textContent).join(","));
 
   picks.find((b) => b.textContent === "רון").click();
   await tick(80);
@@ -145,7 +145,7 @@ function makeServer() {
   await tick(140);
 
   const rows = [...doc.querySelectorAll("#board .p")];
-  ok(rows.length === 7, "לוח קבוצה עם 7 משתתפים");
+  ok(rows.length === 8, "לוח קבוצה עם 8 משתתפים (נמצאו " + rows.length + ")");
   const mine = rows.find((r) => r.classList.contains("me"));
   ok(!!mine && mine.querySelector(".nm").textContent.indexOf("רון") === 0, "השורה שלי מודגשת");
   ok(mine.querySelector(".score").textContent === "5 /70", "ניקוד: 5 מתוך 70 (" + mine.querySelector(".score").textContent + ")");

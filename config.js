@@ -3,7 +3,7 @@ window.CHALLENGE_CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbzWVg9cYzlb-TBZQ7R_6dWgCUnsyL6ynoMOwaGGmSxRQ0u7XDjqLcYbMVVvRXO1hykL/exec",
   START: "2026-11-29",
   DAYS: 14,
-  PEOPLE: ["אלי", "רון", "ליאל", "נועה", "איתי", "ורד", "קובי"],
+  PEOPLE: ["אלי", "רון", "ליאל", "נועה", "איתי", "ורד", "קובי", "רוני"],
   RULES: [
     { big: "10K", label: "צעדים", sub: "10,000 ביום" },
     { big: "40-60", label: "אימון", sub: "דקות, כל יום" },
